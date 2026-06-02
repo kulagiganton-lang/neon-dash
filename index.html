@@ -13,132 +13,290 @@
             font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             height: 100vh;
-            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        #gameCanvas {
-            border: 2px solid #00f2ff;
-            box-shadow: 0 0 20px #00f2ff55;
-            background-color: #000;
-            max-width: 100%;
-            max-height: 100%;
-        }
-
-        .ui {
-            position: absolute;
-            top: 20px;
-            text-align: center;
-            pointer-events: none;
+        #game-container {
+            position: relative;
             width: 100%;
+            max-width: 600px;
+            aspect-ratio: 2 / 1;
+            border: 2px solid #00f2ff;
+            box-shadow: 0 0 15px #00f2ff;
+            background-color: #1a002c;
+            overflow: hidden;
         }
 
-        #score {
-            font-size: 40px;
-            color: #00f2ff;
-            text-shadow: 0 0 10px #00f2ff;
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
         }
 
-        #best {
-            font-size: 18px;
-            color: #ff00ea;
-        }
-
-        .overlay {
+        /* Общие стили для экранов интерфейса */
+        .menu-screen {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
+            background: rgba(5, 5, 5, 0.9);
             z-index: 10;
         }
 
-        h2 { font-size: 48px; color: #00f2ff; margin: 0; text-shadow: 0 0 20px #00f2ff; }
-        p { font-size: 18px; margin: 20px 0; color: #ccc; }
-        button {
-            padding: 15px 40px;
-            font-size: 24px;
-            background: transparent;
+        h2 {
+            font-size: 32px;
             color: #00f2ff;
-            border: 2px solid #00f2ff;
-            cursor: pointer;
-            transition: 0.3s;
-            font-family: inherit;
+            text-shadow: 0 0 10px #00f2ff;
+            margin: 10px 0;
+            text-transform: uppercase;
         }
-        button:hover { background: #00f2ff; color: #000; box-shadow: 0 0 30px #00f2ff; }
+
+        p {
+            font-size: 14px;
+            color: #ccc;
+            margin: 5px 0 15px 0;
+        }
+
+        /* Кнопки */
+        .btn {
+            background: none;
+            border: 2px solid #00f2ff;
+            color: #00f2ff;
+            padding: 10px 30px;
+            font-size: 18px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 8px;
+            box-shadow: 0 0 8px #00f2ff;
+            transition: 0.2s;
+            text-transform: uppercase;
+        }
+
+        .btn:active {
+            background-color: #00f2ff;
+            color: #050505;
+            box-shadow: 0 0 20px #00f2ff;
+        }
+
+        /* Счётчики в игре */
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 0;            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        #scoreVal {
+            font-size: 36px;
+            color: #00f2ff;
+            text-shadow: 0 0 8px #00f2ff;
+        }
+
+        #bestVal {
+            font-size: 14px;
+            color: #ff00ea;
+            text-shadow: 0 0 5px #ff00ea;
+        }
+
+        /* Настройки */
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 250px;
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        .toggle-btn {
+            border: 2px solid #ff00ea;
+            color: #ff00ea;
+            box-shadow: 0 0 8px #ff00ea;
+        }
+
+        .toggle-btn.off {
+            border-color: #555;
+            color: #555;
+            box-shadow: none;
+        }
     </style>
 </head>
 <body>
 
-    <div class="ui">
-        <div id="score">0</div>
-        <div id="best">РЕКОРД: 0</div>
-    </div>
+    <div id="game-container">
+        <!-- Игровой интерфейс (Счет) -->
+        <div id="hud">
+            <div id="scoreVal">0</div>
+            <div id="bestVal">РЕКОРД: 0</div>
+        </div>
 
-    <div id="startMenu" class="overlay">
-        <h2>NEON DASH</h2>
-        <p>Кликай, чтобы менять гравитацию</p>
-        <button onclick="startGame()">ИГРАТЬ</button>
-    </div>
+        <canvas id="gameCanvas" width="600" height="300"></canvas>
 
-    <canvas id="gameCanvas"></canvas>
+        <!-- ГЛАВНОЕ МЕНЮ -->
+        <div id="startMenu" class="menu-screen">
+            <h2>NEON DASH</h2>
+            <p>Кликай, чтобы менять гравитацию</p>
+            <button class="btn" id="playBtn">ИГРАТЬ</button>
+            <button class="btn" id="settingsBtn">НАСТРОЙКИ</button>
+            <button class="btn" id="recordsBtn">РЕКОРДЫ</button>
+        </div>
+
+        <!-- НАСТРОЙКИ -->
+        <div id="settingsMenu" class="menu-screen" style="display: none;">
+            <h2>НАСТРОЙКИ</h2>
+            <div class="setting-row">
+                <span>ЗВУК:</span>
+                <button class="btn toggle-btn" id="soundToggle">ВКЛ</button>
+            </div>
+            <div class="setting-row">
+                <span>МУЗЫКА:</span>
+                <button class="btn toggle-btn" id="musicToggle">ВКЛ</button>
+            </div>
+            <button class="btn" id="backFromSettingsBtn">НАЗАД</button>
+        </div>
+
+        <!-- РЕКОРДЫ -->
+        <div id="recordsMenu" class="menu-screen" style="display: none;">
+            <h2>РЕКОРДЫ</h2>
+            <p style="font-size: 18px; color: #ff00ea; text-shadow: 0 0 5px #ff00ea;">
+                ВАШ ЛУЧШИЙ РЕЗУЛЬТАТ: <span id="recordVal">0</span>
+            </p>
+            <button class="btn" id="backFromRecordsBtn">НАЗАД</button>
+        </div>
+    </div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');        const ctx = canvas.getContext('2d');
-        const scoreEl = document.getElementById('score');
-        const bestEl = document.getElementById('best');
-        const startMenu = document.getElementById('startMenu');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-        // Настройки экрана
-        canvas.width = 800;
-        canvas.height = 400;
+        const startMenu = document.getElementById('startMenu');
+        const settingsMenu = document.getElementById('settingsMenu');
+        const recordsMenu = document.getElementById('recordsMenu');
+
+        const scoreEl = document.getElementById('scoreVal');
+        const bestEl = document.getElementById('bestVal');
+        const recordValEl = document.getElementById('recordVal');
+
+        // Кнопки навигации
+        const playBtn = document.getElementById('playBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const recordsBtn = document.getElementById('recordsBtn');
+        const backFromSettingsBtn = document.getElementById('backFromSettingsBtn');
+        const backFromRecordsBtn = document.getElementById('backFromRecordsBtn');
+
+        // Кнопки настроек
+        const soundToggle = document.getElementById('soundToggle');
+        const musicToggle = document.getElementById('musicToggle');
 
         let gameActive = false;
         let score = 0;
-        let bestScore = localStorage.getItem('neonBest') || 0;
-        bestEl.innerText = `РЕКОРД: ${bestScore}`;
+        let bestScore = parseInt(localStorage.getItem('neonBest')) || 0;let gameSpeed = 5;
+        let frameCount = 0;
 
-        // Параметры игрока
         const player = {
-            x: 100,
-            y: 350,
-            size: 30,
-            onCeiling: false,
-            targetY: 350,
-            speedY: 15,
+            x: 80,
+            y: 200,
+            size: 24,
+            targetY: 200,
             color: '#00f2ff'
         };
 
         let obstacles = [];
-        let gameSpeed = 5;
-        let frameCount = 0;
         let particles = [];
+        let isTop = false;
 
-        // Управление
-        function handleInput() {
-            if (!gameActive) return;
-            player.onCeiling = !player.onCeiling;
-            player.targetY = player.onCeiling ? 20 : canvas.height - player.size - 20;
+        // Состояния настроек
+        let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+        let musicEnabled = localStorage.getItem('musicEnabled') !== 'false';
+
+        // Инициализация интерфейса
+        bestEl.innerText = `РЕКОРД: ${bestScore}`;
+        recordValEl.innerText = bestScore;
+        updateSettingsUI();
+
+        // Обработка переходов меню
+        playBtn.addEventListener('click', startGame);
+        
+        settingsBtn.addEventListener('click', () => {
+            startMenu.style.display = 'none';
+            settingsMenu.style.display = 'flex';
+        });
+
+        recordsBtn.addEventListener('click', () => {
+            startMenu.style.display = 'none';
+            recordsMenu.style.display = 'flex';
+            recordValEl.innerText = bestScore;
+        });
+
+        backFromSettingsBtn.addEventListener('click', () => {
+            settingsMenu.style.display = 'none';
+            startMenu.style.display = 'flex';
+        });
+
+        backFromRecordsBtn.addEventListener('click', () => {
+            recordsMenu.style.display = 'none';
+            startMenu.style.display = 'flex';
+        });
+
+        // Включение/выключение звуков
+        soundToggle.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem('soundEnabled', soundEnabled);
+            updateSettingsUI();
+        });
+
+        musicToggle.addEventListener('click', () => {
+            musicEnabled = !musicEnabled;
+            localStorage.setItem('musicEnabled', musicEnabled);
+            updateSettingsUI();
+        });
+
+        function updateSettingsUI() {
+            soundToggle.innerText = soundEnabled ? 'ВКЛ' : 'ВЫКЛ';
+            soundToggle.className = soundEnabled ? 'btn toggle-btn' : 'btn toggle-btn off';
+            musicToggle.innerText = musicEnabled ? 'ВКЛ' : 'ВЫКЛ';
+            musicToggle.className = musicEnabled ? 'btn toggle-btn' : 'btn toggle-btn off';
         }
 
-        window.addEventListener('keydown', (e) => { if(e.code === 'Space') handleInput(); });
-        canvas.addEventListener('mousedown', handleInput);
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput(); });
+        // Клик по экрану/холсту для прыжка
+        function handleJump() {
+            if (!gameActive) return;
+            isTop = !isTop;
+            player.targetY = isTop ? 20 : canvas.height - player.size - 20;
+            createParticles(player.x + player.size/2, player.y + player.size/2, player.color);
+        }
+
+        canvas.addEventListener('mousedown', handleJump);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleJump();
+        });
 
         function startGame() {
-            gameActive = true;
-            startMenu.style.display = 'none';
             score = 0;
-            gameSpeed = 6;
+            gameSpeed = 5;
             obstacles = [];
             particles = [];
-            player.onCeiling = false;
+            gameActive = true;
+            startMenu.style.display = 'none';
+            isTop = false;
             player.y = canvas.height - player.size - 20;
             player.targetY = player.y;
+            frameCount = 0;
             animate();
         }
 
@@ -156,11 +314,11 @@
         }
 
         function spawnObstacle() {
-            const isTop = Math.random() > 0.5;
+            const isObstacleTop = Math.random() > 0.5;
             const h = 40 + Math.random() * 60;
             obstacles.push({
                 x: canvas.width,
-                y: isTop ? 0 : canvas.height - h,
+                y: isObstacleTop ? 0 : canvas.height - h,
                 w: 30,
                 h: h,
                 color: '#ff00ea'
@@ -178,12 +336,12 @@
             setTimeout(() => {
                 startMenu.style.display = 'flex';
                 startMenu.querySelector('h2').innerText = "БАБАХ!";
+                playBtn.innerText = "ИГРАТЬ СНОВА";
             }, 500);
         }
 
         function animate() {
             if (!gameActive) {
-                // Рисуем частицы даже после смерти
                 ctx.fillStyle = 'rgba(0,0,0,0.2)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 updateParticles();
