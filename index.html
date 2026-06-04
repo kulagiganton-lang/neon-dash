@@ -3,79 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEON DASH: EVOLUTION</title>
+    <title>NEON DASH: HYPER-DRIVE</title>
     <style>
         body {
-            margin: 0; padding: 0; background-color: #050505; color: #fff;
-            font-family: 'Courier New', Courier, monospace; overflow: hidden;
+            margin: 0; padding: 0; background-color: #020205; color: #fff;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; overflow: hidden;
             display: flex; align-items: center; justify-content: center; height: 100vh;
             user-select: none; -webkit-user-select: none; touch-action: none;
         }
         #game-container {
             position: relative; width: 100%; max-width: 600px; aspect-ratio: 2 / 1;
-            border: 3px solid #00f2ff; transition: border-color 0.5s, box-shadow 0.5s;
-            box-shadow: 0 0 20px #00f2ff; background-color: #000; overflow: hidden;
+            border: 4px solid #00f2ff; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 30px #00f2ff44; background-color: #000; overflow: hidden;
         }
         canvas { display: block; width: 100%; height: 100%; }
         .menu-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: rgba(5, 5, 5, 0.95); z-index: 10;
+            background: rgba(2, 2, 5, 0.9); z-index: 20;
         }
-        h2 { font-size: 32px; color: #00f2ff; text-shadow: 0 0 15px #00f2ff; margin: 5px 0; text-align: center; }
+        h2 { font-size: 38px; color: #00f2ff; text-shadow: 0 0 20px #00f2ff; margin: 10px 0; font-weight: 900; letter-spacing: 2px; }
         .btn {
-            background: transparent; border: 2px solid #00f2ff; color: #00f2ff;
-            padding: 8px 20px; font-size: 15px; font-family: inherit; font-weight: bold;
-            cursor: pointer; margin: 4px; transition: 0.2s;
+            background: rgba(0, 242, 255, 0.1); border: 2px solid #00f2ff; color: #00f2ff;
+            padding: 12px 30px; font-size: 18px; font-weight: bold; text-transform: uppercase;
+            cursor: pointer; margin: 6px; transition: 0.3s; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
         }
-        .btn:active { background-color: #00f2ff; color: #050505; }
+        .btn:active { background-color: #00f2ff; color: #000; transform: scale(0.95); }
         #hud {
-            position: absolute; top: 8px; left: 0; width: 100%;
-            display: flex; flex-direction: column; align-items: center; pointer-events: none; z-index: 5;
+            position: absolute; top: 15px; left: 0; width: 100%;
+            display: flex; flex-direction: row; justify-content: space-around; align-items: center;
+            pointer-events: none; z-index: 10;
         }
-        #scoreVal { font-size: 32px; color: #00f2ff; text-shadow: 0 0 8px #00f2ff; }
-        #stageName { font-size: 14px; color: #fff; background: rgba(255,255,255,0.1); padding: 2px 10px; border-radius: 10px; margin-top: 5px; }
-        #skinsList { display: flex; flex-wrap: wrap; justify-content: center; margin-top: 5px; max-height: 200px; overflow-y: auto; }
-        .skin-card {
-            width: 80px; height: 80px; margin: 5px; border: 2px solid #fff;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-size: 9px; font-weight: bold; cursor: pointer; border-radius: 8px; position: relative;
-        }        .skin-card.locked { filter: grayscale(1) brightness(0.5); cursor: not-allowed; }
-        .skin-card.selected { border-color: #FFD700; box-shadow: 0 0 15px #FFD700; }
-        .lock-icon { position: absolute; font-size: 20px; bottom: 5px; }
-        #rage-bar { position: absolute; bottom: 0; left: 0; height: 5px; width: 0%; background: #00FF66; z-index: 6; }
+        .hud-item { text-align: center; font-weight: bold; }
+        #scoreVal { font-size: 40px; color: #fff; text-shadow: 0 0 10px #00f2ff; }
+        #powerups { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; pointer-events: none; }
+                .p-active { opacity: 1; transform: scale(1.2); box-shadow: 0 0 15px currentColor; }
+        #skinsList { display: flex; flex-wrap: wrap; justify-content: center; margin-top: 10px; max-height: 250px; overflow-y: auto; gap: 10px; padding: 10px; }
+        .skin-card { width: 90px; height: 90px; border: 2px solid #333; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: #111; transition: 0.2s; }
+        .skin-card.selected { border-color: #ffd700; background: #222; box-shadow: 0 0 15px #ffd70044; }
     </style>
 </head>
 <body>
     <div id="game-container">
         <div id="hud">
+            <div class="hud-item" style="color: #ff00ea;">РЕКОРД: <span id="bestHUD">0</span></div>
             <div id="scoreVal">0</div>
-            <div id="stageName">ЭТАП 1: НЕОН</div>
-            <div style="color:#FFD700; font-size:12px; margin-top:3px;">МОНЕТЫ: <span id="coinsHUD">0</span></div>
+            <div class="hud-item" style="color: #ffd700;">💰 <span id="coinsHUD">0</span></div>
         </div>
-        <div id="rage-bar"></div>
+
+        <div id="powerups">
+            <div id="shieldIcon" class="p-icon" style="color: #00f2ff; border-color: #00f2ff;">🛡️</div>
+            <div id="magnetIcon" class="p-icon" style="color: #ffd700; border-color: #ffd700;">🧲</div>
+        </div>
+
         <canvas id="gameCanvas" width="800" height="400"></canvas>
 
+        <!-- МЕНЮ -->
         <div id="startMenu" class="menu-screen">
-            <h2 id="menuTitle">NEON DASH 2.0</h2>
-            <div id="menuStats" style="color:#FFD700; margin-bottom:10px;">РЕКОРД: <span id="bestMenu">0</span> | МОНЕТЫ: <span id="coinsMenu">0</span></div>
-            <button class="btn" id="playBtn">ИГРАТЬ 🚀</button>
-            <button class="btn" id="shopBtn">МАГАЗИН И ДОСТИЖЕНИЯ 🏆</button>
-            <button class="btn" id="promoBtn" style="border-color:#ff00ea; color:#ff00ea;">ПРОМОКОД 🔑</button>
+            <h2 id="menuTitle">NEON DASH</h2>
+            <p style="color: #00f2ff; font-size: 12px; margin-bottom: 20px;">HYPER-DRIVE EDITION</p>
+            <button class="btn" id="playBtn">СТАРТ</button>
+            <button class="btn" id="shopBtn" style="border-color: #ff00ea; color: #ff00ea;">АРСЕНАЛ</button>
+            <button class="btn" id="promoBtn" style="border-color: #ffd700; color: #ffd700; font-size: 14px;">ПРОМОКОД</button>
         </div>
 
+        <!-- МАГАЗИН -->
         <div id="shopMenu" class="menu-screen" style="display: none;">
-            <h2>МАГАЗИН</h2>
-            <p id="shopTip" style="font-size:11px; color:#aaa;">Некоторые скины требуют рекорд!</p>
+            <h2>АРСЕНАЛ</h2>
             <div id="skinsList"></div>
-            <button class="btn" id="backFromShopBtn">НАЗАД</button>
-        </div>
-
-        <div id="promoMenu" class="menu-screen" style="display: none;">
-            <h2>АКТИВАЦИЯ</h2>
-            <input type="text" id="promoInput" style="background:#111; border:2px solid #ff00ea; color:#fff; padding:10px; text-align:center; margin-bottom:10px;" placeholder="КОД...">
-            <button class="btn" id="submitPromoBtn">ОК</button>
-            <button class="btn" id="backFromPromoBtn">НАЗАД</button>
+            <button class="btn" id="backFromShopBtn">ВЕРНУТЬСЯ</button>
         </div>
     </div>
 
@@ -83,164 +79,235 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreEl = document.getElementById('scoreVal');
-        const stageEl = document.getElementById('stageName');
+        const bestHUD = document.getElementById('bestHUD');
         const coinsHUD = document.getElementById('coinsHUD');
-        const skinsListEl = document.getElementById('skinsList');
-        const rageBar = document.getElementById('rage-bar');
+        const shieldIcon = document.getElementById('shieldIcon');
+        const magnetIcon = document.getElementById('magnetIcon');
 
-        let gameActive = false, score = 0, frameCount = 0, gameSpeed = 5, currentStage = 1;
-        let bestScore = parseInt(localStorage.getItem('neonBest')) || 0;
-        let totalCoins = parseInt(localStorage.getItem('neonCoins')) || 0;
-        
-        const player = { x: 100, y: 350, size: 32, targetY: 350, color: '#00f2ff', type: 'color', emoji: '' };
-        let obstacles = [], coins = [], particles = [], floatTexts = [], isTop = false;
-        let rageMode = false, rageTimer = 0;
+        let gameActive = false, score = 0, gameSpeed = 6, frameCount = 0;
+        let totalCoins = parseInt(localStorage.getItem('n_coins')) || 0;
+        let bestScore = parseInt(localStorage.getItem('n_best')) || 0;
+
+        const player = { 
+            x: 120, y: 340, size: 32, 
+            velY: 0, targetY: 340, 
+            color: '#00f2ff', type: 'color', emoji: '',
+            shielded: false, magnetic: false, magTimer: 0
+        };
+
+        let obstacles = [], coins = [], powerups = [], particles = [], gridOffset = 0;
+        let isTop = false, screenShake = 0;
 
         const skins = [
-            { id: 'default', color: '#00f2ff', name: 'НЕОН', req: 0, price: 0, owned: true, type: 'color' },
-            { id: 'sigma', color: '#8e8e8e', name: 'СИГМА 🗿', req: 0, price: 20, owned: false, type: 'emoji', emoji: '🗿' },
-            { id: 'diamond', color: '#00ffff', name: 'АЛМАЗ 💎', req: 500, price: 0, owned: false, type: 'emoji', emoji: '💎' },
-            { id: 'ghost', color: '#ffffff', name: 'ПРИЗРАК 👻', req: 1000, price: 0, owned: false, type: 'emoji', emoji: '👻' },
-            { id: 'master', color: 'rainbow', name: 'МАСТЕР 🔥', req: 2000, price: 0, owned: false, type: 'rainbow' }
+            { id: 'def', name: 'НЕОН', color: '#00f2ff', price: 0, req: 0, owned: true, type: 'color' },
+            { id: 'sig', name: 'SIGMA', color: '#888', price: 50, req: 0, owned: false, type: 'emoji', emoji: '🗿' },
+            { id: 'fire', name: 'FIRE', color: '#ff4400', price: 0, req: 500, owned: false, type: 'emoji', emoji: '🔥' },
+            { id: 'gold', name: 'GOLD', color: '#ffd700', price: 200, req: 0, owned: false, type: 'emoji', emoji: '👑' },
+            { id: 'ghost', name: 'GHOST', color: 'rgba(255,255,255,0.5)', price: 0, req: 1200, owned: false, type: 'emoji', emoji: '👻' }
         ];
-        let selectedSkinId = localStorage.getItem('neonSelectedSkin') || 'default';
+        let selectedSkin = localStorage.getItem('n_skin') || 'def';
 
         function init() {
-            document.getElementById('bestMenu').innerText = bestScore;
-            document.getElementById('coinsMenu').innerText = totalCoins;
+            bestHUD.innerText = bestScore;
             coinsHUD.innerText = totalCoins;
-            skins.forEach(s => { 
-                if(localStorage.getItem('skin_'+s.id)) s.owned = true;
-                if(s.req > 0 && bestScore >= s.req) s.owned = true; 
+            skins.forEach(s => {
+                if(localStorage.getItem('n_s_'+s.id)) s.owned = true;
+                if(s.req > 0 && bestScore >= s.req) s.owned = true;
             });
-            applySkin();
-        }
-
-        function applySkin() {
-            const s = skins.find(x => x.id === selectedSkinId);
-            player.type = s.type; player.color = s.color; player.emoji = s.emoji || '';
+            const s = skins.find(x => x.id === selectedSkin);
+            player.color = s.color; player.type = s.type; player.emoji = s.emoji || '';
         }
 
         function renderSkins() {
-            skinsListEl.innerHTML = '';
+            const list = document.getElementById('skinsList');
+            list.innerHTML = '';
             skins.forEach(s => {
-                const isLocked = (s.req > bestScore && !s.owned);
+                const isLocked = s.req > bestScore && !s.owned;
                 const card = document.createElement('div');
-                card.className = `skin-card ${s.id === selectedSkinId ? 'selected' : ''} ${isLocked ? 'locked' : ''}`;
-                card.style.background = s.color === 'rainbow' ? 'linear-gradient(45deg, red, blue)' : s.color;
+                card.className = `skin-card ${s.id === selectedSkin ? 'selected' : ''}`;
+                if(isLocked) card.style.opacity = '0.4';
                 
-                if (isLocked) {
-                    card.innerHTML = `<div>${s.name}</div><div class="lock-icon">🔒</div><div style="font-size:7px;margin-top:25px;">РЕКОРД: ${s.req}</div>`;
-                } else {
-                    card.innerHTML = `<div>${s.name}</div><div>${s.owned ? 'ВЫБРАТЬ' : s.price + '💰'}</div>`;
-                    card.onclick = () => {
-                        if(s.owned) { selectedSkinId = s.id; localStorage.setItem('neonSelectedSkin', s.id); applySkin(); renderSkins(); }
-                        else if(totalCoins >= s.price) { totalCoins -= s.price; s.owned = true; localStorage.setItem('neonCoins', totalCoins); localStorage.setItem('skin_'+s.id, 'true'); renderSkins(); }
-                    };
-                }
-                skinsListEl.appendChild(card);
+                card.innerHTML = `
+                    <div style="font-size:24px;">${isLocked ? '🔒' : (s.type==='emoji'?s.emoji:'▣')}</div>
+                    <div style="font-size:10px; margin-top:5px;">${s.name}</div>
+                    <div style="font-size:9px; color:#ffd700;">${s.owned?'ВЫБРАН':(isLocked?'РЕКОРД '+s.req:s.price+' 💰')}</div>
+                `;
+                
+                card.onclick = () => {
+                    if(s.owned) {
+                        selectedSkin = s.id; localStorage.setItem('n_skin', s.id);
+                        init(); renderSkins();
+                    } else if(!isLocked && totalCoins >= s.price) {
+                        totalCoins -= s.price; s.owned = true;
+                        localStorage.setItem('n_coins', totalCoins);
+                        localStorage.setItem('n_s_'+s.id, 'true');
+                        init(); renderSkins();
+                    }
+                };
+                list.appendChild(card);
             });
         }
+
+        function startGame() {
+            gameActive = true; score = 0; gameSpeed = 6; frameCount = 0;
+            obstacles = []; coins = []; powerups = []; particles = [];
+            player.shielded = false; player.magnetic = false; player.magTimer = 0;
+            player.y = 340; player.targetY = 340; player.velY = 0; isTop = false;
+            document.getElementById('startMenu').style.display = 'none';
+            shieldIcon.classList.remove('p-active'); magnetIcon.classList.remove('p-active');
+            animate();
+        }
+
+        function handleJump() {
+            if(!gameActive) return;
+            isTop = !isTop;
+            player.targetY = isTop ? 40 : canvas.height - player.size - 40;
+            createParticles(player.x, player.y + 16, player.color, 8);
+        }
+
+        canvas.onmousedown = (e) => { e.preventDefault(); handleJump(); };
+        canvas.ontouchstart = (e) => { e.preventDefault(); handleJump(); };
 
         document.getElementById('playBtn').onclick = startGame;
         document.getElementById('shopBtn').onclick = () => { document.getElementById('startMenu').style.display='none'; document.getElementById('shopMenu').style.display='flex'; renderSkins(); };
         document.getElementById('backFromShopBtn').onclick = () => { document.getElementById('shopMenu').style.display='none'; document.getElementById('startMenu').style.display='flex'; init(); };
-        document.getElementById('promoBtn').onclick = () => { document.getElementById('startMenu').style.display='none'; document.getElementById('promoMenu').style.display='flex'; };
-        document.getElementById('backFromPromoBtn').onclick = () => { document.getElementById('promoMenu').style.display='none'; document.getElementById('startMenu').style.display='flex'; };
-        
-        document.getElementById('submitPromoBtn').onclick = () => {
-            const code = document.getElementById('promoInput').value.toUpperCase();
-            if(code === 'KULAGIN' && !localStorage.getItem('p_k')) { totalCoins+=500; localStorage.setItem('p_k','1'); localStorage.setItem('neonCoins', totalCoins); alert('ГЕЙМДИЗАЙНЕР ДАЛ ВАМ 500 МОНЕТ!'); }
-            document.getElementById('promoInput').value = '';
-        };
-
-        function startGame() {
-            gameActive = true; score = 0; frameCount = 0; gameSpeed = 5; currentStage = 1;
-            obstacles = []; coins = []; particles = []; floatTexts = []; isTop = false;
-            rageMode = false; rageTimer = 0;
-            document.getElementById('startMenu').style.display = 'none';
-            player.y = 350; player.targetY = 350;
-            animate();
-        }
+        document.getElementById('promoBtn').onclick = () => {
+            const p = prompt("ВВЕДИ КОД:");
+            if(p && p.toUpperCase()==='KULAGIN' && !localStorage.getItem('p_k')) {
+                totalCoins += 1000; localStorage.setItem('p_k','1'); localStorage.setItem('n_coins', totalCoins);
+                init(); alert("ЛЕГЕНДАРНЫЕ 1000 МОНЕТ ВАШИ!");
+            }};
 
         function createParticles(x, y, color, count) {
-            for (let i = 0; i < count; i++) {particles.push({ x: x, y: y, vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10, size: Math.random()*5+2, life: 1, color: color });
+            for(let i=0; i<count; i++) {
+                particles.push({ x, y, vx:(Math.random()-0.5)*10, vy:(Math.random()-0.5)*10, size:Math.random()*4+2, life:1, color });
             }
         }
 
-        function spawnObstacle() {
-            const h = 40 + Math.random() * 80;
-            const isT = Math.random() > 0.5;
-            obstacles.push({
-                x: canvas.width, y: isT ? 0 : canvas.height - h, w: 35, h: h,
-                type: (currentStage === 3 && Math.random() > 0.6) ? 'ghost' : 'normal',
-                moving: currentStage >= 2, dir: 1, speed: 1.5 + Math.random()
-            });
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(0, 242, 255, 0.15)';
+            ctx.lineWidth = 1;
+            gridOffset = (gridOffset - gameSpeed) % 40;
+            for(let x = gridOffset; x < canvas.width; x += 40) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for(let y = 0; y < canvas.height; y += 40) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
         }
 
         function animate() {
-            if (!gameActive) return;
-            
-            // Управление этапами
-            if (score < 300) { currentStage = 1; stageEl.innerText = "ЭТАП 1: НЕОН"; document.getElementById('game-container').style.borderColor = "#00f2ff"; }
-            else if (score < 800) { currentStage = 2; stageEl.innerText = "ЭТАП 2: СКОРОСТЬ"; document.getElementById('game-container').style.borderColor = "#ff00ea"; }
-            else { currentStage = 3; stageEl.innerText = "ЭТАП 3: ГЛЮК"; document.getElementById('game-container').style.borderColor = "#ff0000"; }
+            if(!gameActive) return;
 
-            ctx.fillStyle = rageMode ? `rgba(${Math.random()*40},0,0,0.3)` : 'rgba(0,0,0,0.2)';
-            ctx.fillRect(0,0,canvas.width,canvas.height);
+            // Эффект тряски экрана
+            if(screenShake > 0) {
+                ctx.setTransform(1,0,0,1, Math.random()*screenShake - screenShake/2, Math.random()*screenShake - screenShake/2);
+                screenShake -= 0.5;
+            } else {
+                ctx.setTransform(1,0,0,1,0,0);
+            }
 
-            if(rageMode) { rageTimer--; rageBar.style.width = (rageTimer/300*100)+'%'; if(rageTimer<=0) rageMode=false; }
+            ctx.fillStyle = '#020205';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
 
-            player.y += (player.targetY - player.y) * 0.2;
-            ctx.shadowBlur = 15;
-            if (player.type === 'rainbow') player.color = `hsl(${frameCount%360}, 100%, 50%)`;
-            ctx.shadowColor = player.color === 'rainbow' ? '#fff' : player.color;
-            
-            if(player.type === 'emoji') { ctx.font = "34px Arial"; ctx.fillText(player.emoji, player.x, player.y + 28); }
-            else { ctx.fillStyle = player.color; ctx.fillRect(player.x, player.y, player.size, player.size); }
+            // Физика с инерцией
+            let force = (player.targetY - player.y) * 0.15;
+            player.velY += force;
+            player.velY *= 0.8; // Затухание для плавности
+            player.y += player.velY;
+
+            // Отрисовка игрока
+            ctx.shadowBlur = 15; ctx.shadowColor = player.color;
+            if(player.shielded) {
+                ctx.strokeStyle = '#00f2ff'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.arc(player.x+16, player.y+16, 25, 0, Math.PI*2); ctx.stroke();
+            }
+            if(player.type === 'emoji') {
+                ctx.font = "34px Arial"; ctx.fillText(player.emoji, player.x, player.y+28);
+            } else {
+                ctx.fillStyle = player.color; ctx.fillRect(player.x, player.y, player.size, player.size);
+            }
             ctx.shadowBlur = 0;
 
-            if (frameCount % Math.max(20, 80 - Math.floor(gameSpeed*2)) === 0) spawnObstacle();
-            if (frameCount % 100 === 0) coins.push({x: canvas.width, y: 50+Math.random()*300, isS: Math.random()>0.9});
+            // Спавн
+            if(frameCount % Math.max(20, 70 - Math.floor(gameSpeed*1.5)) === 0) {
+                const h = 40 + Math.random()*100;
+                const t = Math.random() > 0.5;
+                obstacles.push({ x: canvas.width, y: t?0:canvas.height-h, w: 35, h: h, pulse: Math.random()>0.7 });
+            }
+            if(frameCount % 120 === 0) coins.push({ x: canvas.width, y: 60+Math.random()*280, vY: 0 });
+            if(frameCount % 500 === 0) powerups.push({ x: canvas.width, y: 150+Math.random()*100, type: Math.random()>0.5?'shield':'magnet' });
 
+            // Препятствия
             obstacles.forEach((o, i) => {
                 o.x -= gameSpeed;
-                if(o.moving) { o.y += o.dir * o.speed; if(o.y<=0 || o.y+o.h >= canvas.height) o.dir *= -1; }
-                
-                let alpha = 1;
-                if(o.type === 'ghost') alpha = Math.abs(Math.sin(frameCount/20));
-                
-                ctx.globalAlpha = alpha;
-                ctx.fillStyle = currentStage === 3 ? '#ff0000' : '#ff00ea';
+                if(o.pulse) o.w = 35 + Math.sin(frameCount/10)*10;
+                ctx.fillStyle = '#ff00ea';
                 ctx.fillRect(o.x, o.y, o.w, o.h);
-                ctx.globalAlpha = 1;
 
-                if (alpha > 0.5 && player.x < o.x + o.w && player.x + player.size > o.x && player.y < o.y + o.h && player.y + player.size > o.y) {
-                    if(!rageMode) { gameActive=false; setTimeout(()=> { document.getElementById('startMenu').style.display='flex'; document.getElementById('menuTitle').innerText="ПОТРАЧЕНО"; init(); }, 500); }
+                if(player.x < o.x+o.w && player.x+32 > o.x && player.y < o.y+o.h && player.y+32 > o.y) {
+                    if(player.shielded) {
+                        player.shielded = false; obstacles.splice(i, 1);
+                        screenShake = 10; shieldIcon.classList.remove('p-active');
+                        createParticles(player.x, player.y, '#00f2ff', 20);
+                    } else {
+                        gameActive = false; screenShake = 20;
+                        if(score > bestScore) { bestScore = Math.floor(score); localStorage.setItem('n_best', bestScore); }
+                        setTimeout(() => { document.getElementById('startMenu').style.display='flex'; init(); },
+                                   600);
+                    }
                 }
-                if (o.x + o.w < 0) obstacles.splice(i, 1);
+                if(o.x < -100) obstacles.splice(i, 1);
             });
+
+            // Монеты и Магнит
+            if(player.magTimer > 0) {
+                player.magTimer--;
+                if(player.magTimer <= 0) { player.magnetic = false; magnetIcon.classList.remove('p-active'); }
+            }
 
             coins.forEach((c, i) => {
-                c.x -= gameSpeed;
-                ctx.font = "20px Arial"; ctx.fillText(c.isS ? "⭐" : "💰", c.x, c.y);
-                if (Math.hypot(player.x - c.x, player.y - c.y) < 30) {
-                    if(c.isS) { rageMode=true; rageTimer=300; }
-                    else { totalCoins++; localStorage.setItem('neonCoins', totalCoins); coinsHUD.innerText=totalCoins; }coins.splice(i, 1);
+                if(player.magnetic) {
+                    c.x += (player.x - c.x) * 0.15;
+                    c.y += (player.y - c.y) * 0.15;
+                } else {
+                    c.x -= gameSpeed;
+                }
+                ctx.fillStyle = '#ffd700'; ctx.font = "24px Arial"; ctx.fillText("💰", c.x, c.y);
+                if(Math.hypot(player.x+16-c.x, player.y+16-c.y) < 35) {
+                    totalCoins++; coinsHUD.innerText = totalCoins; localStorage.setItem('n_coins', totalCoins);
+                    createParticles(c.x, c.y, '#ffd700', 5);
+                    coins.splice(i, 1);
                 }
             });
 
-            particles.forEach((p, i) => { p.x+=p.vx; p.y+=p.vy; p.life-=0.02; ctx.fillStyle=p.color; ctx.globalAlpha=p.life; ctx.fillRect(p.x,p.y,p.size,p.size); if(p.life<=0) particles.splice(i,1); });
+            // Бусты
+            powerups.forEach((p, i) => {
+                p.x -= gameSpeed;
+                ctx.font = "30px Arial"; ctx.fillText(p.type==='shield'?"🛡️":"🧲", p.x, p.y);
+                if(Math.hypot(player.x+16-p.x, player.y+16-p.y) < 35) {
+                    if(p.type==='shield') { player.shielded = true; shieldIcon.classList.add('p-active'); }
+                    else { player.magnetic = true; player.magTimer = 400; magnetIcon.classList.add('p-active'); }
+                    powerups.splice(i, 1);
+                }
+            });
+
+            particles.forEach((p, i) => { 
+                p.x += p.vx; p.y += p.vy; p.life -= 0.03; 
+                ctx.fillStyle = p.color; ctx.globalAlpha = p.life;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+                if(p.life <= 0) particles.splice(i, 1);
+            });
             ctx.globalAlpha = 1;
 
-            score += 0.1; gameSpeed += 0.0015; frameCount++;
+            score += 0.15; gameSpeed += 0.0012; frameCount++;
             scoreEl.innerText = Math.floor(score);
-            if (gameActive) requestAnimationFrame(animate);
+            requestAnimationFrame(animate);
         }
 
-        canvas.onmousedown = () => { isTop=!isTop; player.targetY = isTop ? 20 : 350; createParticles(player.x, player.y, player.color, 5); };
-        canvas.ontouchstart = (e) => { e.preventDefault(); canvas.onmousedown(); };
         init();
     </script>
 </body>
 </html>
+        .p-icon { width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; opacity: 0.3; transition: 0.3s; }
